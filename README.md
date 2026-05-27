@@ -11,7 +11,9 @@ observed user function dispatches the observer "begin" handler through the wrong
 #2  <tracing JIT code>
 ```
 
-Full write-up (root cause, disassembly, suggested fix, upstream links): [`REPORT.md`](./REPORT.md).
+Upstream issue: https://github.com/php/php-src/issues/22158
+
+Full write-up (root cause, disassembly, suggested fix): [`REPORT.md`](./REPORT.md).
 
 ## Conditions (all three required)
 
