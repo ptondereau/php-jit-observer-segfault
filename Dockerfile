@@ -1,19 +1,20 @@
 FROM php:8.4-fpm-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        gcc libc6-dev gdb procps \
+        $PHPIZE_DEPS gdb procps \
     && rm -rf /var/lib/apt/lists/*
 
 # opcache (ships with the image, just enable it)
 RUN docker-php-ext-enable opcache
 
-# Build the minimal Blackfire-free observer extension:
-#  - reserves one op_array run_time_cache extension handle
-#  - registers one fcall observer returning {begin,end} for user functions
-COPY repro_observer.c /tmp/repro_observer.c
+# Build the observer extension with the standard PHP toolchain (phpize/configure/make).
+COPY config.m4 repro_observer.c /usr/src/repro_observer/
 RUN set -eux; \
-    gcc -shared -fPIC $(php-config --includes) /tmp/repro_observer.c \
-        -o "$(php-config --extension-dir)/repro_observer.so"
+    cd /usr/src/repro_observer; \
+    phpize; \
+    ./configure --enable-repro_observer; \
+    make -j"$(nproc)"; \
+    make install
 
 COPY 99-jit-observer.ini /usr/local/etc/php/conf.d/99-jit-observer.ini
 

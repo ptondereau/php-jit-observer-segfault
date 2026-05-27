@@ -23,14 +23,18 @@ Full write-up (root cause, disassembly, suggested fix, upstream links): [`REPORT
 
 ## Run it (CLI, against a PHP 8.4 build)
 
+Build the extension with the standard toolchain (`phpize` picks up the PHP whose
+`php-config` is on `PATH`):
+
 ```bash
-gcc -shared -fPIC $(php-config --includes) repro_observer.c \
-    -o "$(php-config --extension-dir)/repro_observer.so"
+phpize
+./configure --enable-repro_observer
+make
 
 php -n \
   -d zend_extension=opcache.so -d opcache.enable=1 -d opcache.enable_cli=1 \
   -d opcache.jit=1254 -d opcache.jit_buffer_size=32M \
-  -d extension=repro_observer.so app/index.php
+  -d extension="$PWD/modules/repro_observer.so" app/index.php
 # Segmentation fault
 ```
 
@@ -45,7 +49,7 @@ docker compose logs fpm | grep SIGSEGV
 
 ## Files
 
-- `repro_observer.c` minimal extension (reserves one op_array handle, registers one fcall observer)
+- `repro_observer.c` + `config.m4` minimal extension (reserves one op_array handle, registers one fcall observer)
 - `app/index.php` megamorphic call site to an observed method
 - `99-jit-observer.ini` opcache + tracing JIT settings
 - `Dockerfile`, `docker-compose.yml`, `nginx.conf` self-contained FPM setup

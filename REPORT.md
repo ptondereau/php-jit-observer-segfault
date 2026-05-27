@@ -84,6 +84,16 @@ zend_module_entry obs_module_entry = {
 ZEND_GET_MODULE(obs)
 ```
 
+`config.m4`:
+
+```m4
+PHP_ARG_ENABLE([obs], [whether to enable obs],
+  [AS_HELP_STRING([--enable-obs], [Enable obs])], [no])
+if test "$PHP_OBS" != "no"; then
+  PHP_NEW_EXTENSION(obs, obs.c, $ext_shared)
+fi
+```
+
 Script `t.php` (megamorphic call site: 5 receiver types, default `jit_max_polymorphic_calls=2`):
 
 ```php
@@ -103,12 +113,14 @@ echo $t, "\n";
 Build and run:
 
 ```bash
-gcc -shared -fPIC $(php-config --includes) obs.c -o "$(php-config --extension-dir)/obs.so"
+phpize
+./configure --enable-obs
+make
 
 php -n \
   -d zend_extension=opcache.so -d opcache.enable=1 -d opcache.enable_cli=1 \
   -d opcache.jit=1254 -d opcache.jit_buffer_size=32M \
-  -d extension=obs.so t.php
+  -d extension="$PWD/modules/obs.so" t.php
 # Segmentation fault
 ```
 
