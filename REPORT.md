@@ -112,7 +112,7 @@ php -n \
 # Segmentation fault
 ```
 
-(A `php:8.4-fpm` Dockerfile + compose wrapping the same thing is available if it helps; under FPM it crashes on the first request with a 502.)
+Full clonable reproducer (the extension, the script, and a `php:8.4-fpm` Docker setup): https://github.com/ptondereau/php-jit-observer-segfault . Under FPM it crashes on the first request with a 502.
 
 #### Where it might come from (uncertain)
 
